@@ -1,0 +1,28 @@
+#!/bin/sh
+[ $# -ne 2 -a $# -ne 3 ] && echo "usage: $0 generator exe1 [exe2]" >&2 && exit 1
+make -s "$@" || exit $?
+
+TLE=10
+GEN="`realpath "$1"`" || exit $?
+EXE1="`realpath "$2"`" || exit $?
+[ $# -eq 2 ] || EXE2="`realpath "$3"`" || exit $?
+
+for i in `seq 10000`
+do
+  printf "\r%d: %s " "$i" "$1"
+  I="`timeout $TLE "$GEN"`" || exit $?
+
+  printf "\r%d: %s " "$i" "$2"
+  O1="`echo "$I" | timeout $TLE "$EXE1" 2>/dev/null`"
+  [ $? -ne 0 ] && echo RE && echo "$I" > failed && exit 1
+
+  [ $# -eq 2 ] && continue
+
+  printf "\r%d: %s " "$i" "$3"
+  O2="`echo "$I" | timeout $TLE "$EXE2" 2>/dev/null`"
+  [ $? -ne 0 ] && echo RE && echo "$I" > failed && exit 1
+
+  printf "\r"
+  diff -b -L "$3" -L "$2" <(echo "$O2") <(echo "$O1")
+  [ $? -ne 0 ] && echo "$I" > failed && exit 1
+done
