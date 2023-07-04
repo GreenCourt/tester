@@ -20,12 +20,12 @@ javascript:(
       var oneliner = [
         '(X=$(ls -t $(basename -s .cc *.cc) 2>/dev/null|head -n 1);(',
         I.map((x,i) => "echo " + String(i+1) + " " + btoa(x) + " " + btoa(O[i])).join(";"),
-        ')|while read i I O; do echo "====== $X:$i ======";',
+        ')|while read i I O; do echo "($X:$i)";',
         '(echo $I|base64 -d|"./$X" 2>/dev/null||echo RE:$?>&2)|diff -L exp -L act -b <(echo $O|base64 -d) -;',
-        'done 2>&1)|more',
+        'done 2>&1)',
       ].join("");
       navigator.clipboard.writeText(oneliner);
-      alert(I.map((x,i) => "____ in" + String(i+1) + " ____\n" + x + "\n____ out" + String(i+1) + " ____\n" + O[i]).join("\n"));
+      console.log(I.map((x,i) => "____ in" + String(i+1) + " ____\n" + x + "\n____ out" + String(i+1) + " ____\n" + O[i]).join("\n"));
     }
     catch (e) {
       alert(e);
